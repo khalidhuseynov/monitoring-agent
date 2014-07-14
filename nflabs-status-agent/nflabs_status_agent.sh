@@ -5,6 +5,7 @@
 # Include all functions
 . functions
 
+# Change here according tot your ES cluster :D
 readonly ELASTICSEARCH_NODE="http://apple.nflabs.com:9200"
 readonly ELASTICSEARCH_INDICE="nflabsmonitor-"
 readonly ELASTICSEARCH_INDEX="nflabsmonitor"
