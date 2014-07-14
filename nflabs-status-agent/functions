@@ -138,7 +138,7 @@ function network::filter_huge() {
 # Returns:
 #  JSON Array line "ip adresses list"
 #######################################
-function get_ip_address {
+function get_ip_address() {
   local list_of_ip
   local json
   local sep
