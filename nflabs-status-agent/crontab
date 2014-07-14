@@ -1,0 +1,3 @@
+# run every 5 minutes
+
+*/5 * * * * /path/to/nflabs_status_agent.sh
