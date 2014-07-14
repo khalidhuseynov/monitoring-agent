@@ -74,7 +74,7 @@ function get_disk_usage() {
     fi
     disk=$(df -Ph ${current_disk} |grep '^/'| awk  '{print $1}')
     mount=$(df -Ph ${current_disk} |grep '^/'| awk  '{print $6}')
-    if [[ -n "${mount}" ]]; them
+    if [[ -n "${mount}" ]]; then
       printf -v json '%s%s{%s}' "${json}" "${sep}" "\"disk\":\"${disk}\",\"mountedOn\":\"${mount}\",\"value\":${disk_usage}"
     fi
     sep=,
@@ -146,7 +146,7 @@ function get_ip_address {
   list_of_ip=$(ifconfig | grep 'inet addr:' | awk {'print $2'} | awk 'BEGIN{FS=":"}{print $2}' | grep -v '127.0.0.1')
   json="["
   sep=""
-  for ip in $ ${list_of_ip}; do
+  for ip in ${list_of_ip}; do
     printf -v json '%s%s{%s}' "${json}" "${sep}" "\"ip\":\"${ip}\""
     sep=,
   done
