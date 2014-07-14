@@ -3,7 +3,7 @@
 # Monitoring script for NFLabs cluster
 
 # Include all functions
-. function
+. functions
 
 readonly ELASTICSEARCH_NODE="http://apple.nflabs.com:9200/"
 readonly ELASTICSEARCH_INDICE="nflabsmonitor-"
