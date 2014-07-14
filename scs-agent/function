@@ -1,0 +1,156 @@
+#!/bin/bash
+#
+# functions	This file contains functions to be used by most or all
+# 		shell scripts in the scsStatusAgent.
+#
+
+#######################################
+# Get the memory usage
+#
+# Globals:
+#  NONE
+# Arguments:
+#  NONE
+# Returns:
+#  JSON line "mem_usage"
+#######################################
+function get_memory_usage() {
+  local free_data
+  local current
+  local total
+
+  free_data=$(free -m | grep Mem)
+  current=$(echo ${free_data} | cut -f3 -d' ')
+  total=$(echo ${free_data} | cut -f2 -d' ')
+  echo "\"mem_usage\": $(echo "scale = 2; ${current}/${total}*100" | bc)"
+}
+
+#######################################
+# Get the load average 
+#
+# Globals:
+#  NONE
+# Arguments:
+#  NONE
+# Returns:
+#  JSON line "load_XXm"
+#######################################
+function get_load_average() {
+  local load1m
+  local load5m
+  local load15m
+
+  load1m=$(uptime | sed 's/.*load average: //' | awk -F\, '{print $1}')
+  load5m=$(uptime | sed 's/.*load average: //' | awk -F\, '{print $2}')
+  load15m=$(uptime | sed 's/.*load average: //' | awk -F\, '{print $3}')
+  echo "\"load_1m\":${load1m}, "\"load_5m\":${load5m}, "\"load_15m\":${load15m}, \"cpu_usage\":`top -b -n1 | grep "Cpu(s)" | awk '{print $2 + $4}'`"
+}
+
+
+#######################################
+# Get the disks usage
+#
+# Globals:
+#  NONE
+# Arguments:
+#  NONE
+# Returns:
+#  JSON Array line "[disk information]"
+#######################################
+function get_disk_usage() {
+  local current_date
+  local disk_list
+  local json
+  local sep
+
+  current_date=$(date +%Y-%m-%d" "%H:%M)
+  disk_list=$(df -Ph |grep -v hdfs |grep '^/' |grep -v '^//'| awk  '{print $1}')
+  json="["
+  sep=""
+  for current_disk in ${disk_list}; do
+    disk_usage=$(df -Ph ${current_disk} |grep '^/'| awk  '{print $5}'| awk -F'%' '{print $1}')
+    if [[ -z "${disk_usage}" ]]; then
+      continue
+    fi
+    disk=$(df -Ph ${current_disk} |grep '^/'| awk  '{print $1}')
+    mount=$(df -Ph ${current_disk} |grep '^/'| awk  '{print $6}')
+    if [[ -n "${mount}" ]]; them
+      printf -v json '%s%s{%s}' "${json}" "${sep}" "\"disk\":\"${disk}\",\"mountedOn\":\"${mount}\",\"value\":${disk_usage}"
+    fi
+    sep=,
+  done
+  json+=" ]"
+  echo $json
+}
+
+#######################################
+# Get the network usage
+#
+# Globals:
+#  NONE
+# Arguments:
+#  NONE
+# Returns:
+#  JSON line "net_receive"
+#######################################
+function get_network_usage() {
+  local old_net_interface_in
+  local old_net_interface_out
+  local new_net_interface_int
+  local new_net_interface_out
+  local total_bytes_in
+  local total_bytes_out
+
+  old_net_interface_in=$(awk "/^ *eth/"' { if ($1 ~ /.*:[0-9][0-9]*/) { sub(/^.*:/, "") ; sum+=$1 } else { sum+=$2 } } END {print sum}' /proc/net/dev)
+  old_net_interface_out=$(awk "/^ *eth/"' { if ($1 ~ /.*:[0-9][0-9]*/) { sub(/^.*:/, "") ; sum+=$9 } else { sum+=$10 } } END {print sum}' /proc/net/dev)
+  sleep 0.99
+  new_net_interface_int=$(awk "/^ *eth/"' { if ($1 ~ /.*:[0-9][0-9]*/) { sub(/^.*:/, "") ; sum+=$1 } else { sum+=$2 } } END {print sum}' /proc/net/dev)
+  new_net_interface_out=$(awk "/^ *eth/"' { if ($1 ~ /.*:[0-9][0-9]*/) { sub(/^.*:/, "") ; sum+=$9 } else { sum+=$10 } } END {print sum}' /proc/net/dev)
+
+  total_bytes_in=$(( new_net_interface_int - old_net_interface_in ))
+  total_bytes_out=$(( new_net_interface_out - old_net_interface_out ))
+  echo "\"net_receive\": ${total_bytes_in}, \"net_send\": ${total_bytes_out}"
+}
+
+##
+# @Deprecated
+#  here for legacy 
+##
+function network::filter_huge() {
+  json="["
+  sep=""
+  while read -r -a line; do
+    VAL="\"status\":\"${line[1]}\",\"value\":${line[0]}"
+    printf -v json '%s%s{%s}' "$json" "$sep" "$VAL"
+    sep=,
+  done
+  json+=" ]"
+  echo $json
+}
+
+#######################################
+# Get the ip adresses
+#
+# Globals:
+#  NONE
+# Arguments:
+#  NONE
+# Returns:
+#  JSON Array line "ip adresses list"
+#######################################
+function get_ip_address {
+  local list_of_ip
+  local json
+  local sep
+
+  list_of_ip=$(ifconfig | grep 'inet addr:' | awk {'print $2'} | awk 'BEGIN{FS=":"}{print $2}' | grep -v '127.0.0.1')
+  json="["
+  sep=""
+  for ip in $ ${list_of_ip}; do
+    printf -v json '%s%s{%s}' "${json}" "${sep}" "\"ip\":\"${ip}\""
+    sep=,
+  done
+  json+=" ]"
+  echo $json
+}
+
