@@ -80,7 +80,7 @@ function get_disk_usage() {
     sep=,
   done
   json+=" ]"
-  echo $json
+  echo ${json}
 }
 
 #######################################
@@ -125,7 +125,7 @@ function network::filter_huge() {
     sep=,
   done
   json+=" ]"
-  echo $json
+  echo ${json}
 }
 
 #######################################
@@ -151,5 +151,47 @@ function get_ip_address() {
     sep=,
   done
   json+=" ]"
-  echo $json
+  echo ${json}
+}
+
+#######################################
+# Get the list of services
+#
+# Globals:
+#  NONE
+# Arguments:
+#  path of the file with service to check
+# Returns:
+#  JSON Array line "service"
+#######################################
+function get_services_running() {
+
+  if [[ -z "$1" ]]; then
+    echo "No file supplied!"
+    exit 1
+  fi
+
+  local json
+  local sep
+  local service_running
+  local file
+  local number_of_process
+
+  file=$1
+  json="["
+  sep=""
+  service_running="false"
+  number_of_process="0"
+  for line in $(cat ${file}); do
+    number_of_process=$(ps aux | grep -v grep | grep ${line} | wc -l | awk '{print $1}')
+    if [[ ${number_of_process}!="0"  ]]; then
+      service_running="true"
+    else
+      service_running="false"
+    fi
+  printf -v json '%s%s{%s}' "${json}" "${sep}" "\"service\":\"${line}\",\"running\":${service_running}, \"number_of_process\":${number_of_process}"
+  sep=,
+  done
+  json+=" ]"
+  echo ${json}
 }
