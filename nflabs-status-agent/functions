@@ -181,7 +181,7 @@ function get_service_information() {
   time=$3
   service_running="not_running"
   number_of_process=$(ps aux | grep -v grep | grep ${service} | wc -l | awk '{print $1}')
-  if [[ ${number_of_process}!="0"  ]]; then
+  if [[ "${number_of_process}" != "0"  ]]; then
     service_running="running"
   else
     service_running="not_running"
