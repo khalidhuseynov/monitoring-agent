@@ -155,43 +155,36 @@ function get_ip_address() {
 }
 
 #######################################
-# Get the list of services
+# Get the service information
 #
 # Globals:
 #  NONE
 # Arguments:
-#  path of the file with service to check
+#  service name
+#  hostname
+#  timesteamp (kibana like)
 # Returns:
-#  JSON Array line "service"
+#  JSON structure of host service information
 #######################################
-function get_services_running() {
+function get_service_ information() {
 
-  if [[ -z "$1" ]]; then
-    echo "No file supplied!"
-    exit 1
-  fi
+  #TODO(anthony): add param check here
 
-  local json
-  local sep
+  local service
+  local host
+  local time
   local service_running
-  local file
   local number_of_process
 
-  file=$1
-  json="["
-  sep=""
-  service_running="false"
-  number_of_process="0"
-  for line in $(cat ${file}); do
-    number_of_process=$(ps aux | grep -v grep | grep ${line} | wc -l | awk '{print $1}')
-    if [[ ${number_of_process}!="0"  ]]; then
-      service_running="true"
-    else
-      service_running="false"
-    fi
-  printf -v json '%s%s{%s}' "${json}" "${sep}" "\"service\":\"${line}\",\"running\":${service_running}, \"number_of_process\":${number_of_process}"
-  sep=,
-  done
-  json+=" ]"
-  echo ${json}
+  service=$1
+  host=$2
+  time=$3
+  service_running="not_running"
+  number_of_process=$(ps aux | grep -v grep | grep ${service} | wc -l | awk '{print $1}')
+  if [[ ${number_of_process}!="0"  ]]; then
+    service_running="running"
+  else
+    service_running="not_running"
+  fi
+  echo "{\"service\":\"${service}\",\"status\":\"${service_running}\",\"number_of_process\":${number_of_process},\"host\":\"${host}\",\"@timestamp\":${time}}"
 }
