@@ -21,9 +21,7 @@ readonly IP_ADRESSES=$(get_ip_address)
 readonly HOSTANME=$(hostname)
 readonly SERVICE=$(get_services_running ${SERVICES_FILE})
 
-echo ${SERVICE}
-
-readonly JSON="{\"disk_usage\":${DISK_USAGE},\"ipaddr\":${IP_ADRESSES},\"region\":\"KR\",${NETWORK_USAGE},${MEMORY_USAGE},${LOAD_AVERAGE},\"host\":\"${HOSTANME}\",\"@timestamp\":$(($(date +%s%N)/1000000))}" 
+readonly JSON="{\"disk_usage\":${DISK_USAGE},\"service\":${SERVICE}\"ipaddr\":${IP_ADRESSES},\"region\":\"KR\",${NETWORK_USAGE},${MEMORY_USAGE},${LOAD_AVERAGE},\"host\":\"${HOSTANME}\",\"@timestamp\":$(($(date +%s%N)/1000000))}" 
 readonly TODAY=$(date -d "today" +"%Y.%m.%d")
 
 # Add node status to ES
