@@ -44,7 +44,7 @@ fi
 for line in $(cat ${SERVICES_FILE}); do
   JSON_SERVICE=$(get_service_information ${line} ${HOSTNAME} ${TIMESTEAMP})
   # Add service status to ES
-  curl -s --connect-timeout 3 -XPOST "${ELASTICSEARCH_NODE}/${ELASTICSEARCH_INDICE}${TODAY}/${ELASTICSEARCH_INDEX_SERVICE}?ttl=1d" -d "${JSON_SERVICE}" | grep "\"created\":true"
+  curl -s --connect-timeout 3 -XPOST "${ELASTICSEARCH_NODE}/${ELASTICSEARCH_INDICE}${TODAY}/${ELASTICSEARCH_INDEX_SERVICE}?ttl=60d" -d "${JSON_SERVICE}" | grep "\"created\":true"
   if [ $? -ne 0 ]; then
     logger "NFLabs monitor : send service [${line}] status FAILLED."
   else
