@@ -33,7 +33,7 @@ readonly TODAY=$(date -d "today" +"%Y.%m.%d")
 readonly JSON_STATUS="{\"disk_usage\":${DISK_USAGE},\"ipaddr\":${IP_ADRESSES},\"region\":\"KR\",${NETWORK_USAGE},${MEMORY_USAGE},${LOAD_AVERAGE},\"host\":\"${HOSTNAME}\",\"@timestamp\":${TIMESTEAMP}}"
 
 # Add node status to ES
-curl -s --connect-timeout 3 -XPOST "${ELASTICSEARCH_NODE}/${ELASTICSEARCH_INDICE}${TODAY}/${ELASTICSEARCH_INDEX}" -d "${JSON_STATUS}" | grep "\"created\":true"
+curl -s --connect-timeout 3 -XPOST "${ELASTICSEARCH_NODE}/${ELASTICSEARCH_INDICE}${TODAY}/${ELASTICSEARCH_INDEX}?ttl=60d" -d "${JSON_STATUS}" | grep "\"created\":true"
 if [ $? -ne 0 ]; then
   logger "NFLabs monitor : send system status FAILLED."
 else
@@ -44,7 +44,7 @@ fi
 for line in $(cat ${SERVICES_FILE}); do
   JSON_SERVICE=$(get_service_information ${line} ${HOSTNAME} ${TIMESTEAMP})
   # Add service status to ES
-  curl -s --connect-timeout 3 -XPOST "${ELASTICSEARCH_NODE}/${ELASTICSEARCH_INDICE}${TODAY}/${ELASTICSEARCH_INDEX_SERVICE}" -d "${JSON_SERVICE}" | grep "\"created\":true"
+  curl -s --connect-timeout 3 -XPOST "${ELASTICSEARCH_NODE}/${ELASTICSEARCH_INDICE}${TODAY}/${ELASTICSEARCH_INDEX_SERVICE}?ttl=1d" -d "${JSON_SERVICE}" | grep "\"created\":true"
   if [ $? -ne 0 ]; then
     logger "NFLabs monitor : send service [${line}] status FAILLED."
   else
