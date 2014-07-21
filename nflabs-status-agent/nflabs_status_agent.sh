@@ -6,7 +6,7 @@
 #
 
 # Include all functions
-. functions
+. /usr/lib/NFLabsMonitoring/nflabs-status-agent/functions
 
 # Change here according tot your ES cluster :D
 readonly ELASTICSEARCH_NODE="http://apple.nflabs.com:9200"
@@ -15,7 +15,7 @@ readonly ELASTICSEARCH_INDEX="nflabsmonitor"
 readonly ELASTICSEARCH_INDEX_SERVICE="nflabsservice"
 
 # Service to check per node
-readonly SERVICES_FILE="./services"
+readonly SERVICES_FILE="/usr/lib/NFLabsMonitoring/nflabs-status-agent/services"
 
 # Collecting now date
 readonly TIMESTEAMP=$(($(date +%s%N)/1000000))
@@ -29,7 +29,7 @@ readonly CPU_USAGE=$(get_cpu_usage)
 readonly IP_ADRESSES=$(get_ip_address)
 readonly NETWORK_USAGE=$(get_network_usage)
 
-readonly JSON_DOCUMENT="{ \"hostname\":\"${HOSTNAME}\" , \"os\": { \"timestamp\":${timestamp}, ${LOAD_AVERAGE}, ${MEMERY_USAGE}, ${CPU_USAGE} }, \"fs\":{ \"timestamp\":${timestamp}, ${DISK_TOTAL_USAGE} }, \"network\":{ \"timestamp\":${timestamp}, \"adress\": ${IP_ADRESSES}, ${NETWORK_USAGE} },\"@timestamp\":${timestamp} }"
+readonly JSON_DOCUMENT="{ \"hostname\":\"${HOSTNAME}\" , \"os\": { \"timestamp\":${TIMESTEAMP}, ${LOAD_AVERAGE}, ${MEMERY_USAGE}, ${CPU_USAGE} }, \"fs\":{ \"timestamp\":${TIMESTEAMP}, ${DISK_TOTAL_USAGE} }, \"network\":{ \"timestamp\":${TIMESTEAMP}, \"adress\": ${IP_ADRESSES}, ${NETWORK_USAGE} },\"@timestamp\":${TIMESTEAMP} }"
 
 # Add node status to ES
 curl -s --connect-timeout 3 -XPOST "${ELASTICSEARCH_NODE}/${ELASTICSEARCH_INDICE}${TODAY}/${ELASTICSEARCH_INDEX}?ttl=60d" -d "${JSON_DOCUMENT}" | grep "\"created\":true"
