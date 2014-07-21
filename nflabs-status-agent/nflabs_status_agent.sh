@@ -17,23 +17,22 @@ readonly ELASTICSEARCH_INDEX_SERVICE="nflabsservice"
 # Service to check per node
 readonly SERVICES_FILE="./services"
 
-# Collecting node information (disk usage, cpu, network)
-readonly DISK_USAGE=$(get_disk_usage)
-readonly MEMORY_USAGE=$(get_memory_usage)
-readonly LOAD_AVERAGE=$(get_load_average)
-readonly NETWORK_USAGE=$(get_network_usage)
-readonly IP_ADRESSES=$(get_ip_address)
-readonly HOSTNAME=$(hostname)
-
 # Collecting now date
 readonly TIMESTEAMP=$(($(date +%s%N)/1000000))
 readonly TODAY=$(date -d "today" +"%Y.%m.%d")
 
-# Json representation of the node information
-readonly JSON_STATUS="{\"disk_usage\":${DISK_USAGE},\"ipaddr\":${IP_ADRESSES},\"region\":\"KR\",${NETWORK_USAGE},${MEMORY_USAGE},${LOAD_AVERAGE},\"host\":\"${HOSTNAME}\",\"@timestamp\":${TIMESTEAMP}}"
+readonly HOSTNAME=$(hostname)
+readonly MEMERY_USAGE=$(get_memory_usage)
+readonly DISK_TOTAL_USAGE=$(get_disk_information)
+readonly LOAD_AVERAGE=$(get_load_average)
+readonly CPU_USAGE=$(get_cpu_usage)
+readonly IP_ADRESSES=$(get_ip_address)
+readonly NETWORK_USAGE=$(get_network_usage)
+
+readonly JSON_DOCUMENT="{ \"hostname\":\"${HOSTNAME}\" , \"os\": { \"timestamp\":${timestamp}, ${LOAD_AVERAGE}, ${MEMERY_USAGE}, ${CPU_USAGE} }, \"fs\":{ \"timestamp\":${timestamp}, ${DISK_TOTAL_USAGE} }, \"network\":{ \"timestamp\":${timestamp}, \"adress\": ${IP_ADRESSES}, ${NETWORK_USAGE} },\"@timestamp\":${timestamp} }"
 
 # Add node status to ES
-curl -s --connect-timeout 3 -XPOST "${ELASTICSEARCH_NODE}/${ELASTICSEARCH_INDICE}${TODAY}/${ELASTICSEARCH_INDEX}?ttl=60d" -d "${JSON_STATUS}" | grep "\"created\":true"
+curl -s --connect-timeout 3 -XPOST "${ELASTICSEARCH_NODE}/${ELASTICSEARCH_INDICE}${TODAY}/${ELASTICSEARCH_INDEX}?ttl=60d" -d "${JSON_DOCUMENT}" | grep "\"created\":true"
 if [ $? -ne 0 ]; then
   logger "NFLabs monitor : send system status FAILLED."
 else
